@@ -1,0 +1,72 @@
+import { useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
+import { AppButton } from "@/components/app-button";
+import { BottomNav } from "@/components/bottom-nav";
+import { colors, spacing } from "@/theme";
+
+const initialMedications = [
+  { name: "Lisinopril", dose: "10 mg", schedule: "Once daily · 8:00 AM", doctor: "Chen", refill: "Sep 14, 2026", missed: true },
+  { name: "Metformin", dose: "500 mg", schedule: "Twice daily · 8:00 AM, 8:00 PM", doctor: "Nair", refill: "Sep 22, 2026", missed: true },
+  { name: "Atorvastatin", dose: "20 mg", schedule: "Once daily (evening) · 9:00 PM", doctor: "Webb", refill: "Oct 3, 2026", missed: false },
+  { name: "Vitamin D3", dose: "2000 IU", schedule: "Once daily · 8:00 AM", doctor: "Chen", refill: "Nov 1, 2026", missed: false },
+];
+
+export default function MedicationsScreen() {
+  const [medications, setMedications] = useState(initialMedications);
+
+  function markTaken(name: string) {
+    setMedications((current) => current.map((medication) => medication.name === name ? { ...medication, missed: false } : medication));
+  }
+
+  return (
+    <View style={styles.screen}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
+        <Text selectable style={styles.title}>Medications</Text>
+        <Text selectable style={styles.subtitle}>Your active prescriptions</Text>
+        {medications.map((medication) => (
+          <View key={medication.name} style={[styles.card, medication.missed && styles.missedCard]}>
+            <View style={styles.icon}><Text style={styles.iconText}>✚</Text></View>
+            <View style={styles.details}>
+              <View style={styles.nameRow}>
+                <Text selectable style={styles.name}>{medication.name} <Text style={styles.dose}>{medication.dose}</Text></Text>
+                <Text selectable style={[styles.status, medication.missed ? styles.missedStatus : styles.trackStatus]}>{medication.missed ? "Missed" : "On track"}</Text>
+              </View>
+              <Text selectable style={styles.meta}>{medication.schedule}</Text>
+              <View style={styles.metaRow}><Text selectable style={styles.meta}>By: {medication.doctor}</Text><Text selectable style={styles.meta}>Refill: {medication.refill}</Text></View>
+              <View style={styles.actions}>
+                {medication.missed && <AppButton label="Mark taken" onPress={() => markTaken(medication.name)} />}
+                <AppButton label="Refill" onPress={() => {}} variant="secondary" />
+              </View>
+            </View>
+          </View>
+        ))}
+        <View style={styles.footer}><Text selectable style={styles.footerText}>Need to add a medication? Contact your care team.</Text></View>
+      </ScrollView>
+      <BottomNav />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg, gap: spacing.sm, paddingBottom: spacing.xl },
+  title: { color: colors.ink, fontSize: 30, fontWeight: "800", marginBottom: 2 },
+  subtitle: { color: colors.muted, fontSize: 18, marginBottom: spacing.lg },
+  card: { flexDirection: "row", gap: spacing.md, padding: spacing.md, backgroundColor: colors.surface, borderRadius: 19, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md },
+  missedCard: { borderColor: "#FFC58D" },
+  icon: { width: 50, height: 50, borderRadius: 14, backgroundColor: "#F0F5FA", alignItems: "center", justifyContent: "center" },
+  iconText: { color: colors.navy, fontSize: 23 },
+  details: { flex: 1, gap: 7 },
+  nameRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.sm },
+  name: { flex: 1, color: colors.ink, fontSize: 17, fontWeight: "800" },
+  dose: { color: colors.muted, fontWeight: "500" },
+  status: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999, overflow: "hidden", fontSize: 11, fontWeight: "800" },
+  missedStatus: { color: colors.red, backgroundColor: "#FFF0F0" },
+  trackStatus: { color: colors.green, backgroundColor: "#EFFAF1" },
+  meta: { color: colors.muted, fontSize: 14 },
+  metaRow: { flexDirection: "row", justifyContent: "space-between", gap: spacing.sm },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
+  footer: { padding: spacing.lg, borderRadius: 19, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, marginTop: spacing.sm },
+  footerText: { color: colors.muted, fontSize: 16, textAlign: "center" },
+});
