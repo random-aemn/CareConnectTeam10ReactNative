@@ -24,10 +24,7 @@ export function BottomNav() {
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             accessibilityLabel={`${destination.label}${selected ? ", selected" : ""}`}
-            onPress={() => {
-              if (destination.route === "/inbox") return;
-              router.replace(destination.route as "/");
-            }}
+            onPress={() => router.replace(destination.route as "/")}
             style={({ pressed }) => [styles.item, pressed && styles.pressed]}
           >
             <View style={[styles.iconWrap, selected && styles.selectedIconWrap]}>

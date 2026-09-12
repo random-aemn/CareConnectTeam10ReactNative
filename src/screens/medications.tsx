@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { AppButton } from "@/components/app-button";
 import { BottomNav } from "@/components/bottom-nav";
@@ -14,6 +14,8 @@ const initialMedications = [
 
 export default function MedicationsScreen() {
   const [medications, setMedications] = useState(initialMedications);
+  const { width, height } = useWindowDimensions();
+  const wide = width >= 700 || width > height;
 
   function markTaken(name: string) {
     setMedications((current) => current.map((medication) => medication.name === name ? { ...medication, missed: false } : medication));
@@ -21,11 +23,12 @@ export default function MedicationsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
         <Text selectable style={styles.title}>Medications</Text>
         <Text selectable style={styles.subtitle}>Your active prescriptions</Text>
-        {medications.map((medication) => (
-          <View key={medication.name} style={[styles.card, medication.missed && styles.missedCard]}>
+        <View style={[styles.cards, wide && styles.wideCards]}>
+          {medications.map((medication) => (
+          <View key={medication.name} style={[styles.card, wide && styles.wideCard, medication.missed && styles.missedCard]}>
             <View style={styles.icon}><Text style={styles.iconText}>✚</Text></View>
             <View style={styles.details}>
               <View style={styles.nameRow}>
@@ -40,7 +43,8 @@ export default function MedicationsScreen() {
               </View>
             </View>
           </View>
-        ))}
+          ))}
+        </View>
         <View style={styles.footer}><Text selectable style={styles.footerText}>Need to add a medication? Contact your care team.</Text></View>
       </ScrollView>
       <BottomNav />
@@ -50,22 +54,26 @@ export default function MedicationsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.sm, paddingBottom: spacing.xl },
+  content: { padding: spacing.lg, gap: spacing.sm, paddingBottom: spacing.xl, width: "100%" },
+  wideContent: { alignSelf: "center", maxWidth: 980 },
   title: { color: colors.ink, fontSize: 30, fontWeight: "800", marginBottom: 2 },
   subtitle: { color: colors.muted, fontSize: 18, marginBottom: spacing.lg },
-  card: { flexDirection: "row", gap: spacing.md, padding: spacing.md, backgroundColor: colors.surface, borderRadius: 19, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md },
+  cards: { gap: spacing.md },
+  wideCards: { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" },
+  card: { flexDirection: "row", gap: spacing.md, padding: spacing.md, backgroundColor: colors.surface, borderRadius: 19, borderWidth: 1, borderColor: colors.border },
+  wideCard: { flexGrow: 1, flexBasis: "46%", minWidth: 320 },
   missedCard: { borderColor: "#FFC58D" },
   icon: { width: 50, height: 50, borderRadius: 14, backgroundColor: "#F0F5FA", alignItems: "center", justifyContent: "center" },
   iconText: { color: colors.navy, fontSize: 23 },
   details: { flex: 1, gap: 7 },
-  nameRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.sm },
+  nameRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: spacing.sm },
   name: { flex: 1, color: colors.ink, fontSize: 17, fontWeight: "800" },
   dose: { color: colors.muted, fontWeight: "500" },
   status: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999, overflow: "hidden", fontSize: 11, fontWeight: "800" },
   missedStatus: { color: colors.red, backgroundColor: "#FFF0F0" },
   trackStatus: { color: colors.green, backgroundColor: "#EFFAF1" },
   meta: { color: colors.muted, fontSize: 14 },
-  metaRow: { flexDirection: "row", justifyContent: "space-between", gap: spacing.sm },
+  metaRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: spacing.sm },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
   footer: { padding: spacing.lg, borderRadius: 19, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, marginTop: spacing.sm },
   footerText: { color: colors.muted, fontSize: 16, textAlign: "center" },

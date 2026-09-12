@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AppButton } from "@/components/app-button";
 import { BottomNav } from "@/components/bottom-nav";
@@ -13,12 +13,14 @@ const appointments = [
 
 export default function AppointmentsScreen() {
   const [requestVisible, setRequestVisible] = useState(false);
+  const { width, height } = useWindowDimensions();
+  const wide = width >= 700 || width > height;
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
         <View style={styles.header}>
-          <View style={styles.titleRow}>
+          <View style={[styles.titleRow, wide && styles.wideTitleRow]}>
             <Text selectable style={styles.title}>Appointments</Text>
             <AppButton label="Request Appointment" icon={<Text style={styles.buttonIcon}>＋</Text>} onPress={() => setRequestVisible(true)} />
           </View>
@@ -27,19 +29,21 @@ export default function AppointmentsScreen() {
             <Text selectable style={styles.inactiveSegment}>Past</Text>
           </View>
         </View>
-        {appointments.map((appointment) => <AppointmentCard key={appointment.provider} appointment={appointment} />)}
+        <View style={[styles.cards, wide && styles.wideCards]}>
+          {appointments.map((appointment) => <AppointmentCard key={appointment.provider} appointment={appointment} wide={wide} />)}
+        </View>
       </ScrollView>
       <BottomNav />
-      <AppointmentRequestModal visible={requestVisible} onClose={() => setRequestVisible(false)} />
+      <AppointmentRequestModal visible={requestVisible} wide={wide} onClose={() => setRequestVisible(false)} />
     </View>
   );
 }
 
 type Appointment = (typeof appointments)[number];
 
-function AppointmentCard({ appointment }: { appointment: Appointment }) {
+function AppointmentCard({ appointment, wide }: { appointment: Appointment; wide: boolean }) {
   return (
-    <View style={styles.card} accessibilityLabel={`${appointment.provider}, ${appointment.specialty}`}>
+    <View style={[styles.card, wide && styles.wideCard]} accessibilityLabel={`${appointment.provider}, ${appointment.specialty}`}>
       {appointment.timeAway && <Text selectable style={styles.timeAway}>• {appointment.timeAway}</Text>}
       <View style={styles.cardMain}>
         <View style={styles.cardIcon}><Text style={styles.cardIconText}>{appointment.telehealth ? "◉" : "▣"}</Text></View>
@@ -59,7 +63,7 @@ function AppointmentCard({ appointment }: { appointment: Appointment }) {
   );
 }
 
-function AppointmentRequestModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+function AppointmentRequestModal({ visible, wide, onClose }: { visible: boolean; wide: boolean; onClose: () => void }) {
   const [provider, setProvider] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -80,8 +84,8 @@ function AppointmentRequestModal({ visible, onClose }: { visible: boolean; onClo
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.modalBackdrop}>
-        <View style={styles.modalCard} accessibilityViewIsModal>
+      <View style={[styles.modalBackdrop, wide && styles.wideModalBackdrop]}>
+        <View style={[styles.modalCard, wide && styles.wideModalCard]} accessibilityViewIsModal>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text selectable style={styles.modalTitle}>Request an appointment</Text>
@@ -119,16 +123,21 @@ function FieldLabel({ label }: { label: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 32 },
+  content: { padding: spacing.lg, gap: spacing.md, paddingBottom: 32, width: "100%" },
+  wideContent: { alignSelf: "center", maxWidth: 980 },
   header: { gap: spacing.lg },
   titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md },
+  wideTitleRow: { alignItems: "flex-start" },
   title: { color: colors.ink, fontSize: 30, fontWeight: "800", flex: 1 },
   buttonIcon: { fontSize: 18, color: colors.white },
   segmented: { padding: 5, backgroundColor: "#F0F2F8", borderRadius: 16, flexDirection: "row", alignItems: "center" },
+  cards: { gap: spacing.md },
+  wideCards: { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" },
   activeSegment: { flex: 1, backgroundColor: colors.navy, borderRadius: 12, paddingVertical: 13, alignItems: "center" },
   activeSegmentText: { color: colors.white, fontWeight: "700" },
   inactiveSegment: { flex: 1, color: colors.muted, fontSize: 15, fontWeight: "700", textAlign: "center" },
   card: { padding: spacing.md, backgroundColor: colors.surface, borderRadius: 19, borderWidth: 1, borderColor: "#BDD7FF", gap: spacing.md },
+  wideCard: { flexGrow: 1, flexBasis: "46%", minWidth: 320 },
   timeAway: { color: "#2E64E8", fontWeight: "800" },
   cardMain: { flexDirection: "row", gap: spacing.md },
   cardIcon: { width: 50, height: 50, borderRadius: 14, backgroundColor: "#F0F6FF", alignItems: "center", justifyContent: "center" },
@@ -139,7 +148,9 @@ const styles = StyleSheet.create({
   meta: { color: colors.muted, fontSize: 14, marginTop: 9 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   modalBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(15, 28, 46, 0.42)" },
-  modalCard: { maxHeight: "92%", backgroundColor: colors.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderCurve: "continuous" },
+  wideModalBackdrop: { justifyContent: "center", alignItems: "center" },
+  modalCard: { width: "100%", maxHeight: "92%", backgroundColor: colors.surface, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderCurve: "continuous" },
+  wideModalCard: { width: "92%", maxWidth: 680, alignSelf: "center", borderRadius: 26 },
   modalContent: { padding: spacing.lg, gap: spacing.sm },
   modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.sm },
   modalTitle: { color: colors.ink, fontSize: 23, fontWeight: "800" },

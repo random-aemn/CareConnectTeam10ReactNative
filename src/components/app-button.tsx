@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: colors.navy },
   secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   quiet: { paddingHorizontal: 8 },
-  label: { fontSize: 15, fontWeight: "700" },
+  label: { flexShrink: 1, textAlign: "center", fontSize: 15, fontWeight: "700" },
   primaryLabel: { color: colors.white },
   secondaryLabel: { color: colors.navy },
   quietLabel: { color: colors.muted },

@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { AppButton } from "@/components/app-button";
 import { BottomNav } from "@/components/bottom-nav";
@@ -17,11 +17,13 @@ const missedMedications = [
 
 export function Home() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const wide = width >= 700 || width > height;
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
+        <View style={[styles.hero, wide && styles.wideHero]}>
           <View style={styles.brandRow}>
             <View style={styles.brandMark}><Text style={styles.brandGlyph}>✦</Text></View>
             <Text selectable style={styles.brand}>CareConnect</Text>
@@ -30,15 +32,15 @@ export function Home() {
           </View>
           <Text selectable style={styles.greeting}>Good morning,{"\n"}Jordan</Text>
           <Text selectable style={styles.date}>Mon, Aug 31</Text>
-          <View style={styles.statsRow}>
+          <View style={[styles.statsRow, wide && styles.wideStatsRow]}>
             <Stat value="3" label="Appointments" color="#506D91" />
             <Stat value="4" label="Meds" color="#D55229" />
             <Stat value="2" label="Unread" color="#2E62D8" />
           </View>
         </View>
 
-        <View style={styles.section}>
-          <View style={[styles.alertPanel, styles.bluePanel]}>
+        <View style={[styles.section, wide && styles.wideSection]}>
+          <View style={[styles.alertPanel, styles.bluePanel, wide && styles.widePanel]}>
             <Text style={styles.panelIcon}>▣</Text>
             <Text selectable style={[styles.panelTitle, styles.blueText]}>2 appointments in the next 24 hours</Text>
             {appointments.map((appointment) => (
@@ -52,7 +54,7 @@ export function Home() {
             ))}
           </View>
 
-          <View style={[styles.alertPanel, styles.orangePanel]}>
+          <View style={[styles.alertPanel, styles.orangePanel, wide && styles.widePanel]}>
             <Text style={styles.panelIcon}>!</Text>
             <Text selectable style={[styles.panelTitle, styles.orangeText]}>2 missed doses today</Text>
             {missedMedications.map((medication) => (
@@ -66,7 +68,7 @@ export function Home() {
             ))}
           </View>
 
-          <AppButton label="View appointments" onPress={() => router.push("/appointments")} />
+          <View style={wide && styles.wideAction}><AppButton label="View appointments" onPress={() => router.push("/appointments")} /></View>
         </View>
       </ScrollView>
       <BottomNav />
@@ -85,8 +87,10 @@ function Stat({ value, label, color }: { value: string; label: string; color: st
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.lg },
+  content: { paddingBottom: spacing.lg, width: "100%" },
+  wideContent: { alignSelf: "center", maxWidth: 980 },
   hero: { backgroundColor: colors.navy, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: 30, gap: spacing.md },
+  wideHero: { paddingHorizontal: spacing.xl },
   brandRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   brandMark: { width: 42, height: 42, borderRadius: 12, backgroundColor: colors.blue, alignItems: "center", justifyContent: "center" },
   brandGlyph: { color: colors.white, fontSize: 22 },
@@ -96,11 +100,14 @@ const styles = StyleSheet.create({
   greeting: { color: colors.white, fontSize: 30, lineHeight: 35, fontWeight: "800" },
   date: { color: "#C7D2E2", fontSize: 18 },
   statsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
+  wideStatsRow: { maxWidth: 620 },
   stat: { flex: 1, minHeight: 88, borderRadius: 16, alignItems: "center", justifyContent: "center", gap: 3 },
   statValue: { color: colors.white, fontSize: 30, fontWeight: "800", fontVariant: ["tabular-nums"] },
   statLabel: { color: colors.white, fontSize: 12, fontWeight: "700", textAlign: "center" },
   section: { padding: spacing.lg, gap: spacing.lg },
+  wideSection: { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" },
   alertPanel: { padding: spacing.md, borderRadius: 20, gap: spacing.sm, borderWidth: 1 },
+  widePanel: { flex: 1, minWidth: 320 },
   bluePanel: { backgroundColor: colors.paleBlue, borderColor: "#B9D4FF" },
   orangePanel: { backgroundColor: colors.paleOrange, borderColor: "#FFC58D" },
   panelIcon: { color: colors.blue, fontSize: 25, fontWeight: "800" },
@@ -113,4 +120,5 @@ const styles = StyleSheet.create({
   miniMeta: { color: colors.muted, marginTop: 4, fontSize: 14 },
   chip: { color: colors.navy, backgroundColor: "#EAF1FB", paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, overflow: "hidden", fontSize: 12, fontWeight: "700" },
   missedChip: { color: colors.red, backgroundColor: "#FFF0F0", paddingHorizontal: 9, paddingVertical: 6, borderRadius: 999, overflow: "hidden", fontSize: 12, fontWeight: "700" },
+  wideAction: { width: "100%" },
 });
