@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "CareConnectTeam10React",
-    "slug": "CareConnectTeam10React",
+    "name": "CareConnect",
+    "slug": "care-connect",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "careconnectteam10react",
+    "scheme": "careconnect",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
