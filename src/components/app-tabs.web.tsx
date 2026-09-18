@@ -35,7 +35,7 @@ export default function AppTabs() {
 
 export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable accessible accessibilityRole="tab" accessibilityLabel={String(children)} accessibilityHint={`Navigates to ${String(children)}`} accessibilityState={{ selected: isFocused }} {...props} style={({ pressed }) => [styles.tabTarget, pressed && styles.pressed]}>
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
         style={styles.tabButtonView}>
@@ -61,7 +61,7 @@ export function CustomTabList(props: TabListProps) {
         {props.children}
 
         <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
+          <Pressable accessible accessibilityRole="link" accessibilityLabel="Expo documentation" accessibilityHint="Opens in a browser" style={styles.externalPressable}>
             <ThemedText type="link">Docs</ThemedText>
             <SymbolView
               tintColor={colors.text}
@@ -105,7 +105,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.three,
   },
+  tabTarget: {
+    minWidth: 44,
+    minHeight: 44,
+  },
   externalPressable: {
+    minWidth: 44,
+    minHeight: 44,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

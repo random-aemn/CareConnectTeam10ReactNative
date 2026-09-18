@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { AccessibilityInfo, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { AppButton } from "@/components/app-button";
 import { BottomNav } from "@/components/bottom-nav";
@@ -19,27 +19,28 @@ export default function MedicationsScreen() {
 
   function markTaken(name: string) {
     setMedications((current) => current.map((medication) => medication.name === name ? { ...medication, missed: false } : medication));
+    AccessibilityInfo.announceForAccessibility(`${name} marked as taken`);
   }
 
   return (
     <View style={styles.screen}>
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
-        <Text selectable style={styles.title}>Medications</Text>
+        <Text selectable accessibilityRole="header" style={styles.title}>Medications</Text>
         <Text selectable style={styles.subtitle}>Your active prescriptions</Text>
         <View style={[styles.cards, wide && styles.wideCards]}>
           {medications.map((medication) => (
           <View key={medication.name} style={[styles.card, wide && styles.wideCard, medication.missed && styles.missedCard]}>
-            <View style={styles.icon}><Text style={styles.iconText}>✚</Text></View>
+            <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.icon}><Text style={styles.iconText}>✚</Text></View>
             <View style={styles.details}>
               <View style={styles.nameRow}>
                 <Text selectable style={styles.name}>{medication.name} <Text style={styles.dose}>{medication.dose}</Text></Text>
-                <Text selectable style={[styles.status, medication.missed ? styles.missedStatus : styles.trackStatus]}>{medication.missed ? "Missed" : "On track"}</Text>
+                <Text accessible selectable accessibilityLiveRegion="polite" accessibilityLabel={`${medication.name} status: ${medication.missed ? "Missed" : "On track"}`} style={[styles.status, medication.missed ? styles.missedStatus : styles.trackStatus]}>{medication.missed ? "Missed" : "On track"}</Text>
               </View>
               <Text selectable style={styles.meta}>{medication.schedule}</Text>
               <View style={styles.metaRow}><Text selectable style={styles.meta}>By: {medication.doctor}</Text><Text selectable style={styles.meta}>Refill: {medication.refill}</Text></View>
               <View style={styles.actions}>
-                {medication.missed && <AppButton label="Mark taken" onPress={() => markTaken(medication.name)} />}
-                <AppButton label="Refill" onPress={() => {}} variant="secondary" />
+                {medication.missed && <AppButton label="Mark taken" accessibilityLabel={`Mark ${medication.name} as taken`} accessibilityHint="Updates this medication status to on track" onPress={() => markTaken(medication.name)} />}
+                <AppButton label="Refill" accessibilityLabel={`Refill ${medication.name}`} accessibilityHint="Starts a refill request" onPress={() => {}} variant="secondary" />
               </View>
             </View>
           </View>

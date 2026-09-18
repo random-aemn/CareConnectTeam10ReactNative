@@ -34,6 +34,20 @@ describe("InboxScreen", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Create a new message" }));
     await fireEvent.press(screen.getByRole("button", { name: "Send message" }));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Choose a provider and enter a message to continue.");
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Choose a provider and enter a message to continue.");
+    expect(alert).toHaveProp("accessibilityLiveRegion", "assertive");
+  });
+
+  it("exposes navigation and provider selection state", async () => {
+    await render(<InboxScreen />);
+    expect(screen.getByRole("tab", { name: "Inbox" })).toBeSelected();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Create a new message" }));
+    const provider = screen.getByRole("radio", { name: "Dr. Priya Nair" });
+    expect(provider).not.toBeSelected();
+    await fireEvent.press(provider);
+    expect(provider).toBeSelected();
+    expect(provider).toHaveProp("accessibilityHint", "Selects Endocrinology as the message recipient");
   });
 });

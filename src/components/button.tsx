@@ -7,7 +7,17 @@ type ButtonProps = ComponentProps<typeof Pressable> & {
 
 export function Button({ label, ...props }: ButtonProps) {
   return (
-    <Pressable {...props}>
+    <Pressable
+      accessible
+      accessibilityRole={props.accessibilityRole ?? "button"}
+      accessibilityLabel={props.accessibilityLabel ?? label}
+      accessibilityHint={props.accessibilityHint ?? `Activates ${label.toLowerCase()}`}
+      {...props}
+      style={({ pressed }) => [
+        { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
+        typeof props.style === "function" ? props.style({ pressed }) : props.style,
+      ]}
+    >
       <Text>{label}</Text>
     </Pressable>
   );
