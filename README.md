@@ -25,6 +25,7 @@ Use `npm install` only when intentionally changing dependencies and updating the
 
 Start the Expo development server:
 
+
 ```bash
 npm start
 ```
