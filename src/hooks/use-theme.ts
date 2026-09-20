@@ -1,3 +1,8 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
 export function useTheme() {
-  return "light" as const;
+  const scheme = useColorScheme();
+
+  return Colors[scheme === 'dark' ? 'dark' : 'light'];
 }
