@@ -7,8 +7,8 @@ import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { colors, spacing } from "@/theme";
 
 const appointments = [
-  { provider: "Dr. Sarah Chen", specialty: "Primary Care", date: "Tue, Sep 1 · 12:20 AM", location: "Northside Medical Center, Suite 210", telehealth: false, timeAway: "~4h away" },
-  { provider: "Dr. Marcus Webb", specialty: "Cardiology", date: "Tue, Sep 1 · 6:20 PM", location: "Telehealth - Video Call", telehealth: true, timeAway: "~22h away" },
+  { provider: "Dr. Sarah Chen", specialty: "Primary Care", date: "Tue, Sep 1 · 12:20 AM", location: "Northside Medical Center, Suite 210", telehealth: false, timeAway: "Approximately 4 hours away" },
+  { provider: "Dr. Marcus Webb", specialty: "Cardiology", date: "Tue, Sep 1 · 6:20 PM", location: "Telehealth - Video Call", telehealth: true, timeAway: "Approximately 22 hours away" },
   { provider: "Dr. Priya Nair", specialty: "Endocrinology", date: "Sat, Sep 5 · 8:20 PM", location: "Westfield Health Pavilion, Room 114", telehealth: false },
 ];
 
@@ -49,7 +49,7 @@ type Appointment = (typeof appointments)[number];
 function AppointmentCard({ appointment, wide }: { appointment: Appointment; wide: boolean }) {
   return (
     <View style={[styles.card, wide && styles.wideCard]}>
-      {appointment.timeAway && <Text selectable style={styles.timeAway}>• {appointment.timeAway}</Text>}
+      {appointment.timeAway && <Text accessible={false} selectable style={styles.timeAway}>• {appointment.timeAway}</Text>}
       <View style={styles.cardMain} accessible accessibilityRole="summary" accessibilityLabel={`${appointment.provider}, ${appointment.specialty}, ${appointment.date}, ${appointment.location}${appointment.timeAway ? `, ${appointment.timeAway}` : ""}`}>
         <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.cardIcon}><Text style={styles.cardIconText}>{appointment.telehealth ? "◉" : "▣"}</Text></View>
         <View style={styles.flex}>
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
   wideCards: { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" },
   segment: { flex: 1, minHeight: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   activeSegment: { backgroundColor: colors.navy },
-  activeSegmentText: { color: colors.white, fontWeight: "700" },
-  inactiveSegment: { flex: 1, color: colors.navy, fontSize: 15, fontWeight: "700", textAlign: "center" },
+  activeSegmentText: { color: colors.white, fontSize: 15, fontWeight: "700", textAlign: "center" },
+  inactiveSegment: { color: colors.navy, fontSize: 15, fontWeight: "700", textAlign: "center" },
   emptyState: { color: colors.muted, fontSize: 16, padding: spacing.lg, textAlign: "center" },
   card: { padding: spacing.md, backgroundColor: colors.surface, borderRadius: 19, borderWidth: 1, borderColor: "#BDD7FF", gap: spacing.md },
   wideCard: { flexGrow: 1, flexBasis: "46%", minWidth: 320 },

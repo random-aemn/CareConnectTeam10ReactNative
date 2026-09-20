@@ -16,6 +16,8 @@ describe("AppointmentsScreen accessibility", () => {
     const past = screen.getByRole("tab", { name: "Past" });
     expect(upcoming).toBeSelected();
     expect(past).not.toBeSelected();
+    expect(screen.getByRole("tab", { name: "Appointments" })).toBeSelected();
+    expect(screen.getByLabelText("Dr. Sarah Chen, Primary Care, Tue, Sep 1 · 12:20 AM, Northside Medical Center, Suite 210, Approximately 4 hours away")).toBeOnTheScreen();
 
     await fireEvent.press(past);
     expect(past).toBeSelected();

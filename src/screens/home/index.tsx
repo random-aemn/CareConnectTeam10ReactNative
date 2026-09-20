@@ -6,8 +6,8 @@ import { BottomNav } from "@/components/bottom-nav";
 import { colors, spacing } from "@/theme";
 
 const appointments = [
-  { provider: "Dr. Sarah Chen", time: "12:20 AM · ~4h away", mode: "In-Person" },
-  { provider: "Dr. Marcus Webb", time: "6:20 PM · ~22h away", mode: "Telehealth" },
+  { provider: "Dr. Sarah Chen", time: "12:20 AM, approximately 4 hours away", mode: "In-Person" },
+  { provider: "Dr. Marcus Webb", time: "6:20 PM, approximately 22 hours away", mode: "Telehealth" },
 ];
 
 const missedMedications = [
@@ -28,7 +28,7 @@ export function Home() {
             <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.brandMark}><Text style={styles.brandGlyph}>✦</Text></View>
             <Text selectable style={styles.brand}>CareConnect</Text>
             <View style={styles.flex} />
-            <AppButton label="Highlights" icon={<Text accessible={false} style={styles.buttonIcon}>ⓘ</Text>} onPress={() => {}} variant="secondary" accessibilityHint="Shows today's health highlights" />
+            <AppButton label="Highlights" icon={<Text accessible={false} style={styles.buttonIcon}>ⓘ</Text>} onPress={() => router.push("/highlights")} variant="secondary" accessibilityHint="Shows today's health highlights" />
           </View>
           <Text selectable accessibilityRole="header" style={styles.greeting}>Good morning,{"\n"}Jordan</Text>
           <Text selectable style={styles.date}>Mon, Aug 31</Text>
@@ -44,7 +44,13 @@ export function Home() {
             <Text accessible={false} style={styles.panelIcon}>▣</Text>
             <Text selectable accessibilityRole="header" style={[styles.panelTitle, styles.blueText]}>2 appointments in the next 24 hours</Text>
             {appointments.map((appointment) => (
-              <View key={appointment.provider} style={styles.miniCard}>
+              <View
+                key={appointment.provider}
+                accessible
+                accessibilityRole="summary"
+                accessibilityLabel={`${appointment.provider}, ${appointment.time}, ${appointment.mode}`}
+                style={styles.miniCard}
+              >
                 <View style={styles.flex}>
                   <Text selectable style={styles.miniTitle}>{appointment.provider}</Text>
                   <Text selectable style={styles.miniMeta}>{appointment.time}</Text>

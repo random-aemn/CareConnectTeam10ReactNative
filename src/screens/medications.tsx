@@ -29,15 +29,34 @@ export default function MedicationsScreen() {
         <Text selectable style={styles.subtitle}>Your active prescriptions</Text>
         <View style={[styles.cards, wide && styles.wideCards]}>
           {medications.map((medication) => (
-          <View key={medication.name} style={[styles.card, wide && styles.wideCard, medication.missed && styles.missedCard]}>
+          <View
+            key={medication.name}
+            accessible
+            accessibilityRole="summary"
+            accessibilityLabel={`${medication.name}, ${medication.dose}, ${medication.schedule}, prescribed by Doctor ${medication.doctor}, refill ${medication.refill}, status ${medication.missed ? "missed" : "on track"}`}
+            accessibilityHint={medication.missed ? "Actions available: mark taken and refill" : "Action available: refill"}
+            accessibilityActions={[
+              ...(medication.missed ? [{ name: "markTaken", label: "Mark taken" }] : []),
+              { name: "refill", label: "Refill" },
+            ]}
+            onAccessibilityAction={(event) => {
+              if (event.nativeEvent.actionName === "markTaken") markTaken(medication.name);
+            }}
+            style={[styles.card, wide && styles.wideCard, medication.missed && styles.missedCard]}
+          >
             <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.icon}><Text style={styles.iconText}>✚</Text></View>
             <View style={styles.details}>
-              <View style={styles.nameRow}>
-                <Text selectable style={styles.name}>{medication.name} <Text style={styles.dose}>{medication.dose}</Text></Text>
-                <Text accessible selectable accessibilityLiveRegion="polite" accessibilityLabel={`${medication.name} status: ${medication.missed ? "Missed" : "On track"}`} style={[styles.status, medication.missed ? styles.missedStatus : styles.trackStatus]}>{medication.missed ? "Missed" : "On track"}</Text>
+              <View
+                accessible={false}
+                style={styles.medicationSummary}
+              >
+                <View style={styles.nameRow}>
+                  <Text selectable style={styles.name}>{medication.name} <Text style={styles.dose}>{medication.dose}</Text></Text>
+                  <Text accessible={false} selectable style={[styles.status, medication.missed ? styles.missedStatus : styles.trackStatus]}>{medication.missed ? "Missed" : "On track"}</Text>
+                </View>
+                <Text selectable style={styles.meta}>{medication.schedule}</Text>
+                <View style={styles.metaRow}><Text selectable style={styles.meta}>By: {medication.doctor}</Text><Text selectable style={styles.meta}>Refill: {medication.refill}</Text></View>
               </View>
-              <Text selectable style={styles.meta}>{medication.schedule}</Text>
-              <View style={styles.metaRow}><Text selectable style={styles.meta}>By: {medication.doctor}</Text><Text selectable style={styles.meta}>Refill: {medication.refill}</Text></View>
               <View style={styles.actions}>
                 {medication.missed && <AppButton label="Mark taken" accessibilityLabel={`Mark ${medication.name} as taken`} accessibilityHint="Updates this medication status to on track" onPress={() => markTaken(medication.name)} />}
                 <AppButton label="Refill" accessibilityLabel={`Refill ${medication.name}`} accessibilityHint="Starts a refill request" onPress={() => {}} variant="secondary" />
@@ -67,6 +86,7 @@ const styles = StyleSheet.create({
   icon: { width: 50, height: 50, borderRadius: 14, backgroundColor: "#F0F5FA", alignItems: "center", justifyContent: "center" },
   iconText: { color: colors.navy, fontSize: 23 },
   details: { flex: 1, gap: 7 },
+  medicationSummary: { gap: 7 },
   nameRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start", gap: spacing.sm },
   name: { flex: 1, color: colors.ink, fontSize: 17, fontWeight: "800" },
   dose: { color: colors.muted, fontWeight: "500" },
