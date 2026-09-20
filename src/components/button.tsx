@@ -13,9 +13,9 @@ export function Button({ label, ...props }: ButtonProps) {
       accessibilityLabel={props.accessibilityLabel ?? label}
       accessibilityHint={props.accessibilityHint ?? `Activates ${label.toLowerCase()}`}
       {...props}
-      style={({ pressed }) => [
+      style={(state) => [
         { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
-        typeof props.style === "function" ? props.style({ pressed }) : props.style,
+        typeof props.style === "function" ? props.style(state) : props.style,
       ]}
     >
       <Text>{label}</Text>

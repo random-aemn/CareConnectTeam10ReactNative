@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { forwardRef, type ReactNode } from "react";
+import { Pressable, StyleSheet, Text, type View } from "react-native";
 
 import { colors } from "@/theme";
 
@@ -13,7 +13,7 @@ type AppButtonProps = {
   disabled?: boolean;
 };
 
-export function AppButton({
+export const AppButton = forwardRef<View, AppButtonProps>(function AppButton({
   label,
   icon,
   onPress,
@@ -21,9 +21,10 @@ export function AppButton({
   accessibilityLabel,
   accessibilityHint,
   disabled = false,
-}: AppButtonProps) {
+}: AppButtonProps, ref) {
   return (
     <Pressable
+      ref={ref}
       accessible
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
@@ -54,7 +55,7 @@ export function AppButton({
       </Text>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   base: {

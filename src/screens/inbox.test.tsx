@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { AccessibilityInfo } from "react-native";
 
 import InboxScreen from "./inbox";
 
@@ -10,6 +11,8 @@ jest.mock("expo-router", () => ({
 
 describe("InboxScreen", () => {
   it("creates a new provider message from the Inbox", async () => {
+    jest.useFakeTimers();
+    const announce = jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation(() => undefined);
     await render(<InboxScreen />);
     await fireEvent.press(screen.getByRole("button", { name: "Create a new message" }));
     await fireEvent.press(screen.getByRole("radio", { name: "Dr. Priya Nair" }));
@@ -18,6 +21,10 @@ describe("InboxScreen", () => {
 
     expect(screen.getAllByText("Dr. Priya Nair").length).toBeGreaterThan(0);
     expect(screen.getAllByText("I have a question about my medication.").length).toBeGreaterThan(0);
+    await act(() => jest.runAllTimers());
+    expect(announce).toHaveBeenCalledWith("Message sent to Dr. Priya Nair");
+    announce.mockRestore();
+    jest.useRealTimers();
   });
 
   it("lets the patient reply in an existing thread", async () => {

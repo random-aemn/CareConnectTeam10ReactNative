@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { AccessibilityInfo } from "react-native";
 
 import AppointmentsScreen from "./appointments";
 
@@ -17,6 +18,7 @@ describe("AppointmentsScreen accessibility", () => {
     expect(upcoming).toBeSelected();
     expect(past).not.toBeSelected();
     expect(screen.getByRole("tab", { name: "Appointments" })).toBeSelected();
+    expect(screen.getAllByText("Appointments").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByLabelText("Dr. Sarah Chen, Primary Care, Tue, Sep 1 · 12:20 AM, Northside Medical Center, Suite 210, Approximately 4 hours away")).toBeOnTheScreen();
 
     await fireEvent.press(past);
@@ -36,5 +38,22 @@ describe("AppointmentsScreen accessibility", () => {
     const alert = screen.getByRole("alert");
     expect(alert).toHaveProp("accessibilityLiveRegion", "assertive");
     expect(provider).toHaveProp("aria-invalid", true);
+  });
+
+  it("announces a successfully submitted request", async () => {
+    jest.useFakeTimers();
+    const announce = jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation(() => undefined);
+    await render(<AppointmentsScreen />);
+    await fireEvent.press(screen.getByRole("button", { name: "Request Appointment" }));
+    await fireEvent.changeText(screen.getByPlaceholderText("Select a provider"), "Dr. Sarah Chen");
+    await fireEvent.changeText(screen.getByPlaceholderText("MM/DD/YYYY"), "09/08/2026");
+    await fireEvent.changeText(screen.getByPlaceholderText("9:00 AM"), "9:00 AM");
+    await fireEvent.changeText(screen.getByPlaceholderText("10:00 AM"), "10:00 AM");
+    await fireEvent.press(screen.getByRole("button", { name: "Submit appointment request" }));
+
+    await act(() => jest.runAllTimers());
+    expect(announce).toHaveBeenCalledWith("Appointment request submitted");
+    announce.mockRestore();
+    jest.useRealTimers();
   });
 });

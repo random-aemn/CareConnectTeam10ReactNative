@@ -5,7 +5,7 @@ import { colors, spacing } from "@/theme";
 
 const destinations = [
   { label: "Home", route: "/", glyph: "⌂" },
-  { label: "Appts", accessibilityLabel: "Appointments", route: "/appointments", glyph: "▣" },
+  { label: "Appointments", route: "/appointments", glyph: "▣" },
   { label: "Meds", route: "/medications", glyph: "✚" },
   { label: "Inbox", route: "/inbox", glyph: "□" },
 ] as const;
@@ -18,7 +18,7 @@ export function BottomNav() {
     <View style={styles.bar} accessibilityRole="tablist" accessibilityLabel="Primary navigation">
       {destinations.map((destination) => {
         const selected = pathname === destination.route;
-        const accessibilityLabel = "accessibilityLabel" in destination ? destination.accessibilityLabel : destination.label;
+        const accessibilityLabel = destination.label;
         return (
           <Pressable
             key={destination.route}

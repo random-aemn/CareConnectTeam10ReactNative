@@ -24,8 +24,28 @@ export default function InboxScreen() {
   const [threads, setThreads] = useState(initialThreads);
   const [activeThread, setActiveThread] = useState<Thread | null>(null);
   const [newMessageVisible, setNewMessageVisible] = useState(false);
+  const newMessageButtonRef = useRef<View>(null);
+  const threadRefs = useRef<Record<string, View | null>>({});
   const { width, height } = useWindowDimensions();
   const wide = width >= 700 || width > height;
+
+  function restoreFocus(target: View | null) {
+    setTimeout(() => {
+      const node = findNodeHandle(target);
+      if (node) AccessibilityInfo.setAccessibilityFocus(node);
+    }, 150);
+  }
+
+  function closeThread() {
+    const opener = activeThread ? threadRefs.current[activeThread.id] : null;
+    setActiveThread(null);
+    restoreFocus(opener);
+  }
+
+  function closeNewMessage() {
+    setNewMessageVisible(false);
+    restoreFocus(newMessageButtonRef.current);
+  }
 
   function updateThread(updatedThread: Thread) {
     setThreads((currentThreads) => currentThreads.map((thread) => thread.id === updatedThread.id ? updatedThread : thread));
@@ -38,6 +58,7 @@ export default function InboxScreen() {
     setThreads((currentThreads) => [thread, ...currentThreads]);
     setNewMessageVisible(false);
     setActiveThread(thread);
+    setTimeout(() => AccessibilityInfo.announceForAccessibility(`Message sent to ${provider.name}`), 550);
   }
 
   return (
@@ -45,11 +66,11 @@ export default function InboxScreen() {
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
         <View style={[styles.titleRow, wide && styles.wideTitleRow]}>
           <View style={styles.flex}><Text selectable accessibilityRole="header" style={styles.title}>Inbox</Text><Text selectable style={styles.subtitle}>Messages with your care team</Text></View>
-          <AppButton label="New message" icon={<Text accessible={false} style={styles.buttonIcon}>＋</Text>} onPress={() => setNewMessageVisible(true)} accessibilityLabel="Create a new message" accessibilityHint="Opens the new message form" />
+          <AppButton ref={newMessageButtonRef} label="New message" icon={<Text accessible={false} style={styles.buttonIcon}>＋</Text>} onPress={() => setNewMessageVisible(true)} accessibilityLabel="Create a new message" accessibilityHint="Opens the new message form" />
         </View>
         <View style={[styles.threadList, wide && styles.wideThreadList]}>
         {threads.map((thread) => (
-          <Pressable key={thread.id} accessible onPress={() => setActiveThread(thread)} style={({ pressed }) => [styles.threadCard, wide && styles.wideThreadCard, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={`Open conversation with ${thread.provider.name}`} accessibilityHint="Opens this conversation" accessibilityValue={{ text: `${thread.unread ? "Unread. " : ""}${thread.provider.specialty}. ${thread.preview}. ${thread.time}` }}>
+          <Pressable ref={(node) => { threadRefs.current[thread.id] = node; }} key={thread.id} accessible onPress={() => setActiveThread(thread)} style={({ pressed }) => [styles.threadCard, wide && styles.wideThreadCard, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={`Open conversation with ${thread.provider.name}`} accessibilityHint="Opens this conversation" accessibilityValue={{ text: `${thread.unread ? "Unread. " : ""}${thread.provider.specialty}. ${thread.preview}. ${thread.time}` }}>
             <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.avatar}><Text style={styles.avatarText}>{thread.provider.name.split(" ").slice(-2).map((part) => part[0]).join("")}</Text></View>
             <View style={styles.threadBody}>
               <View style={styles.threadHeader}><Text selectable style={styles.provider}>{thread.provider.name}</Text><Text selectable style={styles.time}>{thread.time}</Text></View>
@@ -63,8 +84,8 @@ export default function InboxScreen() {
         <View style={styles.emptyHint}><Text selectable style={styles.emptyHintTitle}>Need help from another provider?</Text><Text selectable style={styles.emptyHintText}>Start a new conversation and your care team will respond here.</Text></View>
       </ScrollView>
       <BottomNav />
-      <ThreadModal thread={activeThread} wide={wide} onClose={() => setActiveThread(null)} onUpdate={updateThread} />
-      <NewMessageModal visible={newMessageVisible} wide={wide} onClose={() => setNewMessageVisible(false)} onSend={createThread} />
+      <ThreadModal thread={activeThread} wide={wide} onClose={closeThread} onUpdate={updateThread} />
+      <NewMessageModal visible={newMessageVisible} wide={wide} onClose={closeNewMessage} onSend={createThread} />
     </View>
   );
 }
@@ -110,6 +131,8 @@ function NewMessageModal({ visible, wide, onClose, onSend }: { visible: boolean;
   const [error, setError] = useState("");
   const reducedMotion = useReducedMotion();
   const titleRef = useRef<Text>(null);
+  const firstProviderRef = useRef<View>(null);
+  const messageRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!visible) return;
@@ -122,7 +145,22 @@ function NewMessageModal({ visible, wide, onClose, onSend }: { visible: boolean;
 
   function close() { setSelectedProvider(null); setMessage(""); setError(""); onClose(); }
   function send() {
-    if (!selectedProvider || !message.trim()) { const errorMessage = "Choose a provider and enter a message to continue."; setError(errorMessage); AccessibilityInfo.announceForAccessibility(errorMessage); return; }
+    if (!selectedProvider || !message.trim()) {
+      const errorMessage = !selectedProvider && !message.trim()
+        ? "Choose a provider and enter a message to continue."
+        : !selectedProvider
+          ? "Choose a provider to continue."
+          : "Enter a message to continue.";
+      setError(errorMessage);
+      AccessibilityInfo.announceForAccessibility(errorMessage);
+      if (!selectedProvider) {
+        const node = findNodeHandle(firstProviderRef.current);
+        if (node) AccessibilityInfo.setAccessibilityFocus(node);
+      } else {
+        messageRef.current?.focus();
+      }
+      return;
+    }
     onSend(selectedProvider, message.trim());
     setSelectedProvider(null);
     setMessage("");
@@ -134,9 +172,9 @@ function NewMessageModal({ visible, wide, onClose, onSend }: { visible: boolean;
       <View style={[styles.modalBackdrop, wide && styles.wideModalBackdrop]}><View style={[styles.modalCard, wide && styles.wideModalCard]} accessible={false} accessibilityViewIsModal importantForAccessibility="yes"><ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
         <View style={styles.modalHeader}><Text ref={titleRef} accessible accessibilityRole="header" selectable style={styles.modalTitle}>New message</Text><Pressable accessible accessibilityRole="button" accessibilityLabel="Close new message" accessibilityHint="Closes the form without sending" onPress={close} style={styles.closeButton}><Text accessible={false} style={styles.close}>×</Text></Pressable></View>
         <Text nativeID="provider-options-label" selectable style={styles.fieldLabel}>Send to a provider</Text>
-        <View accessibilityRole="radiogroup" accessibilityLabelledBy="provider-options-label" style={styles.providerOptions}>{providers.map((provider) => <Pressable key={provider.name} accessible onPress={() => setSelectedProvider(provider)} style={[styles.providerOption, selectedProvider?.name === provider.name && styles.selectedProvider]} accessibilityRole="radio" accessibilityLabel={provider.name} accessibilityHint={`Selects ${provider.specialty} as the message recipient`} accessibilityState={{ selected: selectedProvider?.name === provider.name }}><Text selectable style={styles.optionName}>{provider.name}</Text><Text selectable style={styles.optionSpecialty}>{provider.specialty}</Text></Pressable>)}</View>
+        <View accessibilityRole="radiogroup" accessibilityLabelledBy="provider-options-label" aria-invalid={Boolean(error) && !selectedProvider} style={styles.providerOptions}>{providers.map((provider, index) => <Pressable ref={index === 0 ? firstProviderRef : undefined} key={provider.name} accessible onPress={() => setSelectedProvider(provider)} style={[styles.providerOption, selectedProvider?.name === provider.name && styles.selectedProvider]} accessibilityRole="radio" accessibilityLabel={provider.name} accessibilityHint={`Selects ${provider.specialty} as the message recipient`} accessibilityState={{ selected: selectedProvider?.name === provider.name }}><Text selectable style={styles.optionName}>{provider.name}</Text><Text selectable style={styles.optionSpecialty}>{provider.specialty}</Text></Pressable>)}</View>
         <Text nativeID="new-message-label" selectable style={styles.fieldLabel}>Message</Text>
-        <TextInput accessible accessibilityLabel="New message text" accessibilityLabelledBy="new-message-label" accessibilityHint="Enter the message for your provider" aria-invalid={Boolean(error) && !message.trim()} placeholder="Describe what you need help with" placeholderTextColor={colors.muted} value={message} onChangeText={setMessage} multiline numberOfLines={5} style={[styles.input, styles.messageInput]} />
+        <TextInput ref={messageRef} accessible accessibilityLabel="New message text" accessibilityLabelledBy="new-message-label" accessibilityHint="Enter the message for your provider" aria-invalid={Boolean(error) && !message.trim()} placeholder="Describe what you need help with" placeholderTextColor={colors.muted} value={message} onChangeText={setMessage} multiline numberOfLines={5} style={[styles.input, styles.messageInput]} />
         {error ? <Text accessible selectable accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.error}>{error}</Text> : null}
         <View style={styles.modalActions}><AppButton label="Cancel" onPress={close} variant="secondary" accessibilityHint="Closes the form without sending" /><AppButton label="Send message" onPress={send} accessibilityHint="Sends this message to the selected provider" /></View>
       </ScrollView></View></View>

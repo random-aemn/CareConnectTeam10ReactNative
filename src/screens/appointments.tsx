@@ -15,8 +15,22 @@ const appointments = [
 export default function AppointmentsScreen() {
   const [requestVisible, setRequestVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const requestButtonRef = useRef<View>(null);
   const { width, height } = useWindowDimensions();
   const wide = width >= 700 || width > height;
+
+  function closeRequest() {
+    setRequestVisible(false);
+    setTimeout(() => {
+      const node = findNodeHandle(requestButtonRef.current);
+      if (node) AccessibilityInfo.setAccessibilityFocus(node);
+    }, 150);
+  }
+
+  function completeRequest() {
+    closeRequest();
+    setTimeout(() => AccessibilityInfo.announceForAccessibility("Appointment request submitted"), 350);
+  }
 
   return (
     <View style={styles.screen}>
@@ -24,7 +38,7 @@ export default function AppointmentsScreen() {
         <View style={styles.header}>
           <View style={[styles.titleRow, wide && styles.wideTitleRow]}>
             <Text selectable accessibilityRole="header" style={styles.title}>Appointments</Text>
-            <AppButton label="Request Appointment" icon={<Text accessible={false} style={styles.buttonIcon}>＋</Text>} onPress={() => setRequestVisible(true)} accessibilityHint="Opens the appointment request form" />
+            <AppButton ref={requestButtonRef} label="Request Appointment" icon={<Text accessible={false} style={styles.buttonIcon}>＋</Text>} onPress={() => setRequestVisible(true)} accessibilityHint="Opens the appointment request form" />
           </View>
           <View style={styles.segmented} accessibilityRole="tablist">
             {(["upcoming", "past"] as const).map((tab) => {
@@ -39,7 +53,7 @@ export default function AppointmentsScreen() {
         </View>
       </ScrollView>
       <BottomNav />
-      <AppointmentRequestModal visible={requestVisible} wide={wide} onClose={() => setRequestVisible(false)} />
+      <AppointmentRequestModal visible={requestVisible} wide={wide} onClose={closeRequest} onSubmitted={completeRequest} />
     </View>
   );
 }
@@ -68,7 +82,7 @@ function AppointmentCard({ appointment, wide }: { appointment: Appointment; wide
   );
 }
 
-function AppointmentRequestModal({ visible, wide, onClose }: { visible: boolean; wide: boolean; onClose: () => void }) {
+function AppointmentRequestModal({ visible, wide, onClose, onSubmitted }: { visible: boolean; wide: boolean; onClose: () => void; onSubmitted: () => void }) {
   const [provider, setProvider] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -78,6 +92,9 @@ function AppointmentRequestModal({ visible, wide, onClose }: { visible: boolean;
   const reducedMotion = useReducedMotion();
   const titleRef = useRef<Text>(null);
   const providerRef = useRef<TextInput>(null);
+  const dateRef = useRef<TextInput>(null);
+  const startTimeRef = useRef<TextInput>(null);
+  const endTimeRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!visible) return;
@@ -96,10 +113,16 @@ function AppointmentRequestModal({ visible, wide, onClose }: { visible: boolean;
       !endTime && "End time",
     ].filter(Boolean) as string[];
     setErrors(missing);
-    if (missing.length === 0) onClose();
+    if (missing.length === 0) onSubmitted();
     else {
       AccessibilityInfo.announceForAccessibility(`Please complete: ${missing.join(", ")}`);
-      providerRef.current?.focus();
+      const firstInvalidField = {
+        "Medical provider": providerRef,
+        "Preferred date": dateRef,
+        "Start time": startTimeRef,
+        "End time": endTimeRef,
+      }[missing[0]];
+      firstInvalidField?.current?.focus();
     }
   }
 
@@ -118,10 +141,10 @@ function AppointmentRequestModal({ visible, wide, onClose }: { visible: boolean;
             <FieldLabel id="provider-label" label="Medical provider (required)" />
             <TextInput ref={providerRef} accessible accessibilityLabel="Medical provider, required" accessibilityLabelledBy="provider-label" accessibilityHint="Enter the provider for this appointment" aria-invalid={errors.includes("Medical provider")} placeholder="Select a provider" placeholderTextColor={colors.muted} value={provider} onChangeText={setProvider} style={styles.input} />
             <FieldLabel id="date-label" label="Preferred date (required)" />
-            <TextInput accessible accessibilityLabel="Preferred date, required" accessibilityLabelledBy="date-label" accessibilityHint="Enter a date in month, day, year format" aria-invalid={errors.includes("Preferred date")} placeholder="MM/DD/YYYY" placeholderTextColor={colors.muted} keyboardType="numbers-and-punctuation" value={date} onChangeText={setDate} style={styles.input} />
+            <TextInput ref={dateRef} accessible accessibilityLabel="Preferred date, required" accessibilityLabelledBy="date-label" accessibilityHint="Enter a date in month, day, year format" aria-invalid={errors.includes("Preferred date")} placeholder="MM/DD/YYYY" placeholderTextColor={colors.muted} keyboardType="numbers-and-punctuation" value={date} onChangeText={setDate} style={styles.input} />
             <View style={styles.timeRow}>
-              <View style={styles.timeField}><FieldLabel id="start-time-label" label="Start time (required)" /><TextInput accessible accessibilityLabel="Start time, required" accessibilityLabelledBy="start-time-label" accessibilityHint="Enter the preferred appointment start time" aria-invalid={errors.includes("Start time")} placeholder="9:00 AM" placeholderTextColor={colors.muted} value={startTime} onChangeText={setStartTime} style={styles.input} /></View>
-              <View style={styles.timeField}><FieldLabel id="end-time-label" label="End time (required)" /><TextInput accessible accessibilityLabel="End time, required" accessibilityLabelledBy="end-time-label" accessibilityHint="Enter the preferred appointment end time" aria-invalid={errors.includes("End time")} placeholder="10:00 AM" placeholderTextColor={colors.muted} value={endTime} onChangeText={setEndTime} style={styles.input} /></View>
+              <View style={styles.timeField}><FieldLabel id="start-time-label" label="Start time (required)" /><TextInput ref={startTimeRef} accessible accessibilityLabel="Start time, required" accessibilityLabelledBy="start-time-label" accessibilityHint="Enter the preferred appointment start time" aria-invalid={errors.includes("Start time")} placeholder="9:00 AM" placeholderTextColor={colors.muted} value={startTime} onChangeText={setStartTime} style={styles.input} /></View>
+              <View style={styles.timeField}><FieldLabel id="end-time-label" label="End time (required)" /><TextInput ref={endTimeRef} accessible accessibilityLabel="End time, required" accessibilityLabelledBy="end-time-label" accessibilityHint="Enter the preferred appointment end time" aria-invalid={errors.includes("End time")} placeholder="10:00 AM" placeholderTextColor={colors.muted} value={endTime} onChangeText={setEndTime} style={styles.input} /></View>
             </View>
             <FieldLabel id="summary-label" label="Additional information (optional)" />
             <TextInput accessible accessibilityLabel="Additional information, optional" accessibilityLabelledBy="summary-label" accessibilityHint="Enter details for the care team" placeholder="Tell us anything the care team should know" placeholderTextColor={colors.muted} value={summary} onChangeText={setSummary} multiline numberOfLines={4} style={[styles.input, styles.summaryInput]} />
