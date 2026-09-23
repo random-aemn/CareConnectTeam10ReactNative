@@ -1,0 +1,11 @@
+appId: com.zbristor2steam.careconnect
+---
+- launchApp
+- tapOn: "Appointments"
+- assertVisible: "Upcoming"
+- tapOn: "Past"
+- assertVisible: "No past appointments."
+- tapOn: "Request Appointment"
+- assertVisible: "Request an appointment"
+- tapOn: "Submit appointment request"
+- assertVisible: "Please complete: Medical provider, Preferred date, Start time, End time"

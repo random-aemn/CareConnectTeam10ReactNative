@@ -41,7 +41,8 @@
   "scripts": {
     "start": "expo start",
     "test": "jest --runInBand",
-    "test:a11y": "jest --runInBand src/components/app-button.test.tsx src/screens/home/index.test.tsx src/screens/highlights.test.tsx src/screens/appointments.test.tsx src/screens/medications.test.tsx src/screens/inbox.test.tsx src/theme/colors.test.ts",
+    "test:a11y": "jest --runInBand src/components/app-button.test.tsx src/screens/home/index.test.tsx src/screens/highlights.test.tsx src/screens/appointments.test.tsx src/screens/medications.test.tsx src/screens/user-flows.test.tsx",
+    "test:e2e:maestro": "maestro test .maestro/flows",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint && npm test",
     "reset-project": "node ./scripts/reset-project.js",

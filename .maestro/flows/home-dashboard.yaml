@@ -1,0 +1,11 @@
+appId: com.zbristor2steam.careconnect
+---
+- launchApp
+- assertVisible: "CareConnect"
+- assertVisible: "2 appointments in the next 24 hours"
+- tapOn: "Highlights"
+- assertVisible: "Today's Highlights"
+- tapOn: "Back to home"
+- assertVisible: "Good morning"
+- tapOn: "View appointments"
+- assertVisible: "Appointments"
