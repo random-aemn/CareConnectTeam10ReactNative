@@ -6,8 +6,8 @@ import { BottomNav } from "@/components/bottom-nav";
 import { colors, spacing } from "@/theme";
 
 const appointments = [
-  { provider: "Dr. Sarah Chen", time: "12:20 AM · ~4h away", mode: "In-Person" },
-  { provider: "Dr. Marcus Webb", time: "6:20 PM · ~22h away", mode: "Telehealth" },
+  { provider: "Dr. Sarah Chen", time: "12:20 AM, approximately 4 hours away", mode: "In-Person" },
+  { provider: "Dr. Marcus Webb", time: "6:20 PM, approximately 22 hours away", mode: "Telehealth" },
 ];
 
 const missedMedications = [
@@ -25,26 +25,32 @@ export function Home() {
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.content, wide && styles.wideContent]}>
         <View style={[styles.hero, wide && styles.wideHero]}>
           <View style={styles.brandRow}>
-            <View style={styles.brandMark}><Text style={styles.brandGlyph}>✦</Text></View>
+            <View accessible={false} importantForAccessibility="no-hide-descendants" style={styles.brandMark}><Text style={styles.brandGlyph}>✦</Text></View>
             <Text selectable style={styles.brand}>CareConnect</Text>
             <View style={styles.flex} />
-            <AppButton label="Highlights" icon={<Text style={styles.buttonIcon}>ⓘ</Text>} onPress={() => {}} variant="secondary" />
+            <AppButton label="Highlights" icon={<Text accessible={false} style={styles.buttonIcon}>ⓘ</Text>} onPress={() => router.push("/highlights")} variant="secondary" accessibilityHint="Shows today's health highlights" />
           </View>
-          <Text selectable style={styles.greeting}>Good morning,{"\n"}Jordan</Text>
+          <Text selectable accessibilityRole="header" style={styles.greeting}>Good morning,{"\n"}Jordan</Text>
           <Text selectable style={styles.date}>Mon, Aug 31</Text>
           <View style={[styles.statsRow, wide && styles.wideStatsRow]}>
             <Stat value="3" label="Appointments" color="#506D91" />
-            <Stat value="4" label="Meds" color="#D55229" />
+            <Stat value="4" label="Meds" color="#A63B1B" />
             <Stat value="2" label="Unread" color="#2E62D8" />
           </View>
         </View>
 
         <View style={[styles.section, wide && styles.wideSection]}>
           <View style={[styles.alertPanel, styles.bluePanel, wide && styles.widePanel]}>
-            <Text style={styles.panelIcon}>▣</Text>
-            <Text selectable style={[styles.panelTitle, styles.blueText]}>2 appointments in the next 24 hours</Text>
+            <Text accessible={false} style={styles.panelIcon}>▣</Text>
+            <Text selectable accessibilityRole="header" style={[styles.panelTitle, styles.blueText]}>2 appointments in the next 24 hours</Text>
             {appointments.map((appointment) => (
-              <View key={appointment.provider} style={styles.miniCard}>
+              <View
+                key={appointment.provider}
+                accessible
+                accessibilityRole="summary"
+                accessibilityLabel={`${appointment.provider}, ${appointment.time}, ${appointment.mode}`}
+                style={styles.miniCard}
+              >
                 <View style={styles.flex}>
                   <Text selectable style={styles.miniTitle}>{appointment.provider}</Text>
                   <Text selectable style={styles.miniMeta}>{appointment.time}</Text>
@@ -55,8 +61,8 @@ export function Home() {
           </View>
 
           <View style={[styles.alertPanel, styles.orangePanel, wide && styles.widePanel]}>
-            <Text style={styles.panelIcon}>!</Text>
-            <Text selectable style={[styles.panelTitle, styles.orangeText]}>2 missed doses today</Text>
+            <Text accessible={false} style={[styles.panelIcon, styles.orangeText]}>!</Text>
+            <Text selectable accessibilityRole="header" style={[styles.panelTitle, styles.orangeText]}>2 missed doses today</Text>
             {missedMedications.map((medication) => (
               <View key={medication.name} style={[styles.miniCard, styles.orangeCard]}>
                 <View style={styles.flex}>
@@ -78,7 +84,7 @@ export function Home() {
 
 function Stat({ value, label, color }: { value: string; label: string; color: string }) {
   return (
-    <View style={[styles.stat, { backgroundColor: color }]}>
+    <View accessible accessibilityRole="summary" accessibilityLabel={`${value} ${label}`} style={[styles.stat, { backgroundColor: color }]}>
       <Text selectable style={styles.statValue}>{value}</Text>
       <Text selectable style={styles.statLabel}>{label}</Text>
     </View>

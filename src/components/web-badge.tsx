@@ -16,6 +16,7 @@ export function WebBadge() {
         v{version}
       </ThemedText>
       <Image
+        accessible={false}
         source={
           scheme === 'dark'
             ? require('@/assets/images/expo-badge-white.png')

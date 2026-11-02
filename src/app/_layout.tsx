@@ -7,6 +7,7 @@ export default function RootLayout() {
       <Stack.Screen name="appointments" />
       <Stack.Screen name="medications" />
       <Stack.Screen name="inbox" />
+      <Stack.Screen name="highlights" />
     </Stack>
   );
 }
